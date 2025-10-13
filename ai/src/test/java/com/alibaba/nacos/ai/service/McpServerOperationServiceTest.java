@@ -49,6 +49,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -626,7 +627,7 @@ class McpServerOperationServiceTest {
                 mockServerBasicInfo.getName());
         verify(mcpServerIndex, times(1)).removeMcpServerById(id);
     }
-    
+
     @Test
     void createMcpServerWithEndpointSpec() throws NacosException {
         McpServerBasicInfo mockServerBasicInfo = mockServerVersionInfo("");
@@ -638,7 +639,7 @@ class McpServerOperationServiceTest {
         endpointSpec.getData().put(Constants.MCP_SERVER_ENDPOINT_ADDRESS, "127.0.0.1");
         endpointSpec.getData().put(Constants.MCP_SERVER_ENDPOINT_PORT, "8848");
         when(endpointOperationService.createMcpServerEndpointServiceIfNecessary(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
-                "mcpName", "1.0.0", endpointSpec)).thenReturn(
+                "mcpName", "1.0.0", endpointSpec, false)).thenReturn(
                 Service.newService(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, Constants.MCP_SERVER_ENDPOINT_GROUP,
                         "mcpName"));
         String id = serverOperationService.createMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, mockServerBasicInfo,
@@ -697,7 +698,7 @@ class McpServerOperationServiceTest {
         endpointSpec.getData().put(Constants.MCP_SERVER_ENDPOINT_ADDRESS, "127.0.0.1");
         endpointSpec.getData().put(Constants.MCP_SERVER_ENDPOINT_PORT, "8848");
         when(endpointOperationService.createMcpServerEndpointServiceIfNecessary(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
-                "mcpName", "1.0.0", endpointSpec)).thenReturn(
+                "mcpName", "1.0.0", endpointSpec, false)).thenReturn(
                 Service.newService(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, Constants.MCP_SERVER_ENDPOINT_GROUP,
                         "mcpName"));
         String actualId = serverOperationService.createMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
@@ -716,7 +717,7 @@ class McpServerOperationServiceTest {
         McpServerBasicInfo mockServerBasicInfo = mockServerVersionInfo(id);
         assertThrows(NacosApiException.class,
                 () -> serverOperationService.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true,
-                        mockServerBasicInfo, null, null));
+                        mockServerBasicInfo, null, null, false));
     }
     
     @Test
@@ -727,7 +728,7 @@ class McpServerOperationServiceTest {
         mockServerBasicInfo.setVersion(null);
         assertThrows(NacosApiException.class,
                 () -> serverOperationService.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true,
-                        mockServerBasicInfo, null, null));
+                        mockServerBasicInfo, null, null, false));
     }
     
     @Test
@@ -739,7 +740,7 @@ class McpServerOperationServiceTest {
         ConfigQueryChainResponse response = mockConfigQueryChainResponse(mockServerBasicInfo);
         when(configQueryChainService.handle(any(ConfigQueryChainRequest.class))).thenReturn(response);
         serverOperationService.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true, mockServerBasicInfo, null,
-                null);
+                null, false);
         verify(configOperationService, times(2)).publishConfig(any(ConfigFormV3.class), any(ConfigRequestInfo.class),
                 isNull());
         verify(mcpServerIndex, times(1)).removeMcpServerByName(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
@@ -756,7 +757,7 @@ class McpServerOperationServiceTest {
         ConfigQueryChainResponse response = mockConfigQueryChainResponse(mockServerBasicInfo);
         when(configQueryChainService.handle(any(ConfigQueryChainRequest.class))).thenReturn(response);
         serverOperationService.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true, mockServerBasicInfo, null,
-                null);
+                null, false);
         verify(configOperationService, times(2)).publishConfig(any(ConfigFormV3.class), any(ConfigRequestInfo.class),
                 isNull());
         verify(mcpServerIndex, times(1)).removeMcpServerByName(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
@@ -773,7 +774,7 @@ class McpServerOperationServiceTest {
         ConfigQueryChainResponse response = mockConfigQueryChainResponse(mockServerBasicInfo);
         when(configQueryChainService.handle(any(ConfigQueryChainRequest.class))).thenReturn(response);
         serverOperationService.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true, mockServerBasicInfo, null,
-                null);
+                null, false);
         verify(configOperationService, times(2)).publishConfig(any(ConfigFormV3.class), any(ConfigRequestInfo.class),
                 isNull());
         verify(mcpServerIndex, times(1)).removeMcpServerByName(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
@@ -786,7 +787,7 @@ class McpServerOperationServiceTest {
         McpServerVersionInfo mockServerBasicInfo = mockServerVersionInfo(null);
         assertThrows(NacosApiException.class,
                 () -> serverOperationService.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true,
-                        mockServerBasicInfo, null, null));
+                        mockServerBasicInfo, null, null, false));
     }
     
     @Test
@@ -799,7 +800,7 @@ class McpServerOperationServiceTest {
         ConfigQueryChainResponse response = mockConfigQueryChainResponse(mockServerBasicInfo);
         when(configQueryChainService.handle(any(ConfigQueryChainRequest.class))).thenReturn(response);
         serverOperationService.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true, mockServerBasicInfo, null,
-                null);
+                null, false);
         verify(configOperationService, times(2)).publishConfig(any(ConfigFormV3.class), any(ConfigRequestInfo.class),
                 isNull());
         verify(mcpServerIndex, times(1)).removeMcpServerByName(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, "mcpName");
@@ -823,7 +824,7 @@ class McpServerOperationServiceTest {
         toolSpecification.setEncryptData(encryptObject);
 
         serverOperationService.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true, updateSpec,
-                toolSpecification, null);
+                toolSpecification, null, false);
 
         verify(toolOperationService, times(1)).refreshMcpTool(eq(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE),
                 any(McpServerStorageInfo.class), eq(toolSpecification));
@@ -849,8 +850,15 @@ class McpServerOperationServiceTest {
         when(configQueryChainService.handle(any(ConfigQueryChainRequest.class))).thenReturn(
                 mockConfigQueryChainResponse(mockServerVersionInfo(id)));
         serverOperationService.deleteMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, null, id, null);
-        verify(endpointOperationService, times(2)).deleteMcpServerEndpointService(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
-                "mcpName");
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(endpointOperationService, times(2))
+                .deleteMcpServerEndpointService(eq(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE), captor.capture());
+        List<String> allArgs = captor.getAllValues();
+        assertEquals(2, allArgs.size(), "The actual number of calls does not match the expectation.");
+        assertTrue(allArgs.contains("mcpName::1.0.0"), "Missing deletion call for version 1.0.0");
+        assertTrue(allArgs.contains("mcpName::9.9.9"), "Missing deletion call for version 9.9.9");
+
         String serverVersionDataId = McpConfigUtils.formatServerVersionInfoDataId(id);
         verify(configOperationService, times(2)).deleteConfig(serverVersionDataId, Constants.MCP_SERVER_VERSIONS_GROUP,
                 AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, null, null, "nacos", null);
@@ -873,8 +881,15 @@ class McpServerOperationServiceTest {
         when(configQueryChainService.handle(any(ConfigQueryChainRequest.class))).thenReturn(
                 mockConfigQueryChainResponse(mockServerBasicInfo));
         serverOperationService.deleteMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, "mcpName", null, null);
-        verify(endpointOperationService, times(2)).deleteMcpServerEndpointService(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
-                "mcpName");
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(endpointOperationService, times(2))
+                .deleteMcpServerEndpointService(eq(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE), captor.capture());
+        List<String> allArgs = captor.getAllValues();
+        assertEquals(2, allArgs.size(), "The actual number of calls does not match the expectation.");
+        assertTrue(allArgs.contains("mcpName::1.0.0"), "Missing deletion call for version 1.0.0");
+        assertTrue(allArgs.contains("mcpName::9.9.9"), "Missing deletion call for version 9.9.9");
+
         verify(mcpServerIndex, times(1)).removeMcpServerByName(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, "mcpName");
         verify(mcpServerIndex, times(0)).removeMcpServerById(null);
         String serverVersionDataId = McpConfigUtils.formatServerVersionInfoDataId(id);
@@ -897,7 +912,7 @@ class McpServerOperationServiceTest {
         verify(mcpServerIndex, times(0)).removeMcpServerByName(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, null);
         verify(mcpServerIndex, times(1)).removeMcpServerById(id);
         verify(endpointOperationService).deleteMcpServerEndpointService(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE,
-                "mcpName");
+                "mcpName::1.0.0");
         String serverVersionDataId = McpConfigUtils.formatServerVersionInfoDataId(id);
         verify(configOperationService).deleteConfig(serverVersionDataId, Constants.MCP_SERVER_VERSIONS_GROUP,
                 AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, null, null, "nacos", null);

@@ -90,9 +90,19 @@ class McpRemoteHandlerTest extends AbstractRemoteHandlerTest {
         McpServerBasicInfo mcpServerBasicInfo = new McpServerBasicInfo();
         mcpServerBasicInfo.setName("test");
         mcpRemoteHandler.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true, mcpServerBasicInfo,
-                new McpToolSpecification(), new McpEndpointSpec());
+                new McpToolSpecification(), new McpEndpointSpec(), false);
         verify(aiMaintainerService).updateMcpServer(eq(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE), eq("test"), eq(true),
-                any(McpServerBasicInfo.class), any(McpToolSpecification.class), any(McpEndpointSpec.class));
+                any(McpServerBasicInfo.class), any(McpToolSpecification.class), any(McpEndpointSpec.class), eq(false));
+    }
+
+    @Test
+    void updateMcpServerWithOverrideExisting() throws NacosException {
+        McpServerBasicInfo mcpServerBasicInfo = new McpServerBasicInfo();
+        mcpServerBasicInfo.setName("test");
+        mcpRemoteHandler.updateMcpServer(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE, true, mcpServerBasicInfo,
+                new McpToolSpecification(), new McpEndpointSpec(), true);
+        verify(aiMaintainerService).updateMcpServer(eq(AiConstants.Mcp.MCP_DEFAULT_NAMESPACE), eq("test"), eq(true),
+                any(McpServerBasicInfo.class), any(McpToolSpecification.class), any(McpEndpointSpec.class), eq(true));
     }
     
     @Test
